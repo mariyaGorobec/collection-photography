@@ -4,9 +4,11 @@ import "./index.scss";
 
 function App() {
   const [collection, setCollection] = React.useState([]);
+  const [items, setItems] = React.useState([]);
   const [searchValue, setSearchValue] = React.useState("");
   const [categoryId, setCategoryId] = React.useState(0);
   const [isLoading, setIsLoading] = React.useState(true);
+  const [page, setPage] = React.useState(0); 
 
   const categories = [
     { name: "Все" },
@@ -17,31 +19,38 @@ function App() {
   ];
 
   React.useEffect(() => {
+    setIsLoading(true);
+    const category = categoryId ? `category=${categoryId}` : ""
     fetch(
-      `https://6493e42c0da866a95366cd75.mockapi.io/collection_photo?${
-        categoryId ? `category=${categoryId}` : ""
-      }`
+      `https://6493e42c0da866a95366cd75.mockapi.io/collection_photo?page=${page+1}&limit=3&${category}`
     )
       .then((res) => res.json())
-      .then((json) => setCollection(json))
+      .then((json) => {setCollection(json);
+     setItems(json)
+  })
       .catch((err) => {
         console.warn(err);
         alert("Error while getting data.");
       })
-      .finally(() => setIsLoading(false));
-  }, [categoryId]);
+      .finally(() => {
+        setIsLoading(false);
+        
+      });
+      
+  }, [categoryId, page]);
 
   return (
     <div className="App">
+     
       <h1>Моя коллекция фотографий</h1>
       <div className="top">
         <ul className="tags">
           {categories.map((obj, index) => (
             <li
-              onClick={() => {
-                setCategoryId(index);
-                setIsLoading(true);
-              }}
+              onClick={() => 
+                setCategoryId(index)
+                
+              }
               className={categoryId === index ? "active" : ""}
               key={obj.name}
             >
@@ -53,7 +62,7 @@ function App() {
           value={searchValue}
           onChange={(e) => setSearchValue(e.target.value)}
           className="search-input"
-          placeholder="Name search"
+          placeholder="Поиск..."
         />
       </div>
       <div className="content">
@@ -74,9 +83,11 @@ function App() {
         )}
       </div>
       <ul className="pagination">
-        <li className="active">1</li>
-        <li>2</li>
-        <li>3</li>
+      {
+      [...Array(3)].map((_,index)=>(<li onClick={()=>setPage(index)} className={page === index ? "active" : ''}>{index+1}</li>))
+      
+  }
+       
       </ul>
     </div>
   );
